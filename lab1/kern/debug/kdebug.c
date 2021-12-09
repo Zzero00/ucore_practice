@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <kdebug.h>
-
 #define STACKFRAME_DEPTH 20
 
 extern const struct stab __STAB_BEGIN__[];  // beginning of stabs table
@@ -302,20 +301,19 @@ print_stackframe(void) {
       *           NOTICE: the calling funciton's return addr eip  = ss:[ebp+4]
       *                   the calling funciton's ebp = ss:[ebp]
       */
-     uint32_t ebp,eip;
-     ebp = read_ebp();
-     eip = read_eip();
-     for (uin32_t i = 0;ebp !=0 && i < STACKFRAME_DEPTH;i++){
-         cprintf("ebp:0x%08x eip:0x%08x args:",ebp,eip);
-         uint32_t *arg = (uint32_t *)ebp + 2;
-         for (uint32_t j = 0;j < 4;j++){
-             cprintf("0x%08x ",args[j]);
-         }
-         cprintf("\n");
-         print_debuginfo(eip-1);
+    uint32_t ebp = read_ebp(), eip = read_eip();
 
-         eip = *((uint32_t *)ebp + 1);
-         ebp = *(uint32_t *)ebp;
-     }
+    int i, j;
+    for (i = 0; ebp != 0 && i < STACKFRAME_DEPTH; i ++) {
+        cprintf("ebp:0x%08x eip:0x%08x args:", ebp, eip);
+        uint32_t *args = (uint32_t *)ebp + 2;
+        for (j = 0; j < 4; j ++) {
+            cprintf("0x%08x ", args[j]);
+        }
+        cprintf("\n");
+        print_debuginfo(eip - 1);
+        eip = ((uint32_t *)ebp)[1];
+        ebp = ((uint32_t *)ebp)[0];
+    }
 }
 
